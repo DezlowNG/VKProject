@@ -72,48 +72,50 @@ public:
 private:
 	GLFWwindow* mWindow = nullptr;
 
-	VkDeleter<VkInstance> instance{ vkDestroyInstance };
-	VkDeleter<VkDebugReportCallbackEXT> callback{ instance, DestroyDebugReportCallbackEXT };
-	VkDeleter<VkSurfaceKHR> surface{ instance, vkDestroySurfaceKHR };
-	VkDeleter<VkDevice> device{ vkDestroyDevice };
-	VkDeleter<VkSwapchainKHR> swapChain{ device, vkDestroySwapchainKHR };
-	VkDeleter<VkRenderPass> renderPass{ device, vkDestroyRenderPass };
-	VkDeleter<VkPipelineLayout> pipelineLayout{ device, vkDestroyPipelineLayout };
-	VkDeleter<VkPipeline> graphicsPipeline{ device, vkDestroyPipeline };
-	VkDeleter<VkCommandPool> commandPool{ device, vkDestroyCommandPool };
-	VkDeleter<VkBuffer> vertexBuffer{ device, vkDestroyBuffer };
-	VkDeleter<VkDeviceMemory> vertexBufferMemory{ device, vkFreeMemory };
+	VkDeleter<VkInstance> mInstance{ vkDestroyInstance };
+	VkDeleter<VkDebugReportCallbackEXT> mCallback{ mInstance, DestroyDebugReportCallbackEXT };
+	VkDeleter<VkSurfaceKHR> mSurface{ mInstance, vkDestroySurfaceKHR };
+	VkDeleter<VkDevice> mDevice{ vkDestroyDevice };
+	VkDeleter<VkSwapchainKHR> mSwapChain{ mDevice, vkDestroySwapchainKHR };
+	VkDeleter<VkRenderPass> mRenderPass{ mDevice, vkDestroyRenderPass };
+	VkDeleter<VkPipelineLayout> mPipelineLayout{ mDevice, vkDestroyPipelineLayout };
+	VkDeleter<VkPipeline> mGraphicsPipeline{ mDevice, vkDestroyPipeline };
+	VkDeleter<VkCommandPool> mCommandPool{ mDevice, vkDestroyCommandPool };
+	VkDeleter<VkBuffer> mVertexBuffer{ mDevice, vkDestroyBuffer };
+	VkDeleter<VkDeviceMemory> mVertexBufferMemory{ mDevice, vkFreeMemory };
 
-	VkDeleter<VkSemaphore> imageAvailableSemaphore{ device, vkDestroySemaphore };
-	VkDeleter<VkSemaphore> renderFinishedSemaphore{ device, vkDestroySemaphore };
+	VkDeleter<VkSemaphore> mImageAvailableSemaphore{ mDevice, vkDestroySemaphore };
+	VkDeleter<VkSemaphore> mRenderFinishedSemaphore{ mDevice, vkDestroySemaphore };
 
-	std::vector<VkDeleter<VkImageView>> swapChainImageViews;
-	std::vector<VkDeleter<VkFramebuffer>> swapChainFramebuffers;
+	std::vector<VkDeleter<VkImageView>> mSwapChainImageViews;
+	std::vector<VkDeleter<VkFramebuffer>> mSwapChainFramebuffers;
 	
-	VkPhysicalDevice physDevice = VK_NULL_HANDLE;
-	VkQueue graphicsQueue, presentQueue;
+	VkPhysicalDevice mPhysDevice = VK_NULL_HANDLE;
+	VkQueue mGraphicsQueue;
+	VkQueue mPresentQueue;
 	
-	VkFormat swapChainImageFormat;
-	VkExtent2D swapChainExtent;
+	VkFormat mSwapChainImageFormat;
+	VkExtent2D mSwapChainExtent;
 
-	std::vector<VkImage> swapChainImages;
-	std::vector<VkCommandBuffer> commandBuffers;
+	std::vector<VkImage> mSwapChainImages;
+	std::vector<VkCommandBuffer> mCommandBuffers;
 
 	const unsigned int mWIDTH = 800;
 	const unsigned int mHEIGHT = 600;
 
-	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-	const std::vector<Vertex> vertices = {
+	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	const std::vector<Vertex> mVertices =
+	{
 		{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
 		{{0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
 		{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 	};
 
 #ifdef NDEBUG
-	const bool enableValidationLayers = false;
+	const bool mEnableValidationLayers = false;
 #else
-	const bool enableValidationLayers = true;
+	const bool mEnableValidationLayers = true;
 #endif
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
