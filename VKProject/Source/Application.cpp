@@ -570,12 +570,9 @@ void Application::recreateSwapChain()
 
 void Application::onWindowResized(GLFWwindow* window, int width, int height)
 {
-	int iconified = glfwGetWindowAttrib(window, GLFW_ICONIFIED);
-
-	if (width <= 0 || height <= 0 || iconified) return;
+	if (width <= 0 || height <= 0) return;
 
 	Application* app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
-	std::cout << width << '\t' << height << '\n';
 	app->recreateSwapChain();
 }
 
