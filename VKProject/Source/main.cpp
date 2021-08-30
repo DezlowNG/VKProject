@@ -2,11 +2,11 @@
 
 int main()
 {
-	Application app;
+	Application* app = new Application;
 
 	try
 	{
-		app.Run();
+		app->Run();
 	}
 	catch (const std::exception& ex)
 	{

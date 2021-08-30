@@ -7,6 +7,8 @@
 #include <GLFW/glfw3.h>
 #include <VkDeleter.h>
 
+#include <glm/glm.hpp>
+
 struct QueueFamilyIndices
 {
 	int graphicsFamily = -1;
@@ -20,6 +22,39 @@ struct SwapChainSupportDetails
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
+};
+
+struct Vertex {
+	glm::vec2 pos;
+	glm::vec3 color;
+
+	static VkVertexInputBindingDescription getBindingDescription()
+	{
+		VkVertexInputBindingDescription bindingDescription = {};
+
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(Vertex);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		return bindingDescription;
+	}
+
+	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions()
+	{
+		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+		
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 1;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+		return attributeDescriptions;
+	}
 };
 
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback);
@@ -46,6 +81,8 @@ private:
 	VkDeleter<VkPipelineLayout> pipelineLayout{ device, vkDestroyPipelineLayout };
 	VkDeleter<VkPipeline> graphicsPipeline{ device, vkDestroyPipeline };
 	VkDeleter<VkCommandPool> commandPool{ device, vkDestroyCommandPool };
+	VkDeleter<VkBuffer> vertexBuffer{ device, vkDestroyBuffer };
+	VkDeleter<VkDeviceMemory> vertexBufferMemory{ device, vkFreeMemory };
 
 	VkDeleter<VkSemaphore> imageAvailableSemaphore{ device, vkDestroySemaphore };
 	VkDeleter<VkSemaphore> renderFinishedSemaphore{ device, vkDestroySemaphore };
@@ -67,6 +104,11 @@ private:
 
 	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	const std::vector<Vertex> vertices = {
+		{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+		{{0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
+		{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+	};
 
 #ifdef NDEBUG
 	const bool enableValidationLayers = false;
@@ -99,6 +141,8 @@ private:
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
+
 	void createShaderModule(const std::vector<char>& code, VkDeleter<VkShaderModule>& shaderModule);
 
 	void initWindow();
@@ -114,6 +158,7 @@ private:
 	void createGraphicsPipeline();
 	void createFramebuffers();
 	void createCommandPool();
+	void createVertexBuffer();
 	void createCommandBuffers();
 	void createSemaphores();
 
