@@ -152,17 +152,22 @@ void Application::createSwapChain()
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	swapChainImageFormat = surfaceFormat.format;
-	swapChainExtent = extent;
+	VkSwapchainKHR oldSwapChain = swapChain;
+	createInfo.oldSwapchain = oldSwapChain;
 
-	if (vkCreateSwapchainKHR(device, &createInfo, nullptr, swapChain.replace()) != VK_SUCCESS)
+	VkSwapchainKHR newSwapChain;
+	if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &newSwapChain) != VK_SUCCESS)
 		throw std::runtime_error("Failed to create swap chain!");
+
+	swapChain = newSwapChain;
 
 	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
 	swapChainImages.resize(imageCount);
 	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+
+	swapChainImageFormat = surfaceFormat.format;
+	swapChainExtent = extent;
 }
 
 void Application::createImageViews()
@@ -366,7 +371,15 @@ void Application::drawScene()
 	VkSwapchainKHR swapChains[] = { swapChain };
 	uint32_t imageIndex;
 
-	vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		recreateSwapChain();
+		return;
+	}
+	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		throw std::runtime_error("failed to acquire swap chain image!");
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -390,7 +403,14 @@ void Application::drawScene()
 	presentInfo.pImageIndices = &imageIndex;
 	presentInfo.pResults = nullptr;
 
-	vkQueuePresentKHR(presentQueue, &presentInfo);
+	result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+	{
+		recreateSwapChain();
+	}
+	else if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to present swap chain image!");
 }
 
 void Application::mainLoop()
@@ -441,6 +461,9 @@ void Application::createCommandPool()
 
 void Application::createCommandBuffers()
 {
+	if (commandBuffers.size() > 0)
+		vkFreeCommandBuffers(device, commandPool, commandBuffers.size(), commandBuffers.data());
+
 	commandBuffers.resize(swapChainFramebuffers.size());
 
 	VkCommandBufferAllocateInfo allocInfo = {};
@@ -489,6 +512,26 @@ void Application::createSemaphores()
 	if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, imageAvailableSemaphore.replace()) != VK_SUCCESS ||
 		vkCreateSemaphore(device, &semaphoreInfo, nullptr, renderFinishedSemaphore.replace()) != VK_SUCCESS)
 		throw std::runtime_error("Failed to create semaphores");
+}
+
+void Application::recreateSwapChain()
+{
+	vkDeviceWaitIdle(device);
+
+	createSwapChain();
+	createImageViews();
+	createRenderPass();
+	createGraphicsPipeline();
+	createFramebuffers();
+	createCommandBuffers();
+}
+
+void Application::onWindowResized(GLFWwindow* window, int width, int height)
+{
+	if (width == 0 || height == 0) return;
+
+	Application* app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+	app->recreateSwapChain();
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Application::debugCallback(
@@ -714,9 +757,11 @@ void Application::initWindow()
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	mWindow = glfwCreateWindow(mWIDTH, mHEIGHT, "VKProject", nullptr, nullptr);
+
+	glfwSetWindowUserPointer(mWindow, this);
+	glfwSetWindowSizeCallback(mWindow, Application::onWindowResized);
 }
 
 void Application::setupDebugCallback()

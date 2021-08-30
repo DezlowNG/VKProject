@@ -117,6 +117,10 @@ private:
 	void createCommandBuffers();
 	void createSemaphores();
 
+	void recreateSwapChain();
+
+	static void onWindowResized(GLFWwindow* window, int width, int height);
+
 	void initVulkan();
 
 	void drawScene();
