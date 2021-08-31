@@ -103,7 +103,7 @@ private:
 	const unsigned int mWIDTH = 800;
 	const unsigned int mHEIGHT = 600;
 
-	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor", "VK_LAYER_NV_optimus", "VK_LAYER_VALVE_steam_overlay" };
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	const std::vector<Vertex> mVertices =
 	{
@@ -129,6 +129,7 @@ private:
 		void* userData);
 
 	static std::vector<char> readFile(const std::string& fileName);
+	static void onWindowResized(GLFWwindow* window, int width, int height);
 
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
@@ -143,9 +144,8 @@ private:
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
-
 	void createShaderModule(const std::vector<char>& code, VkDeleter<VkShaderModule>& shaderModule);
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
 
 	void initWindow();
 
@@ -164,9 +164,10 @@ private:
 	void createCommandBuffers();
 	void createSemaphores();
 
-	void recreateSwapChain();
+	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags props, VkDeleter<VkBuffer>& buffer, VkDeleter<VkDeviceMemory>& bufferMemory);
+	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-	static void onWindowResized(GLFWwindow* window, int width, int height);
+	void recreateSwapChain();
 
 	void initVulkan();
 

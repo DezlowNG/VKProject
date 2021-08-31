@@ -446,30 +446,20 @@ void Application::createCommandPool()
 
 void Application::createVertexBuffer()
 {
-	VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-	bufferInfo.size = sizeof(mVertices[0]) * mVertices.size();
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	VkDeviceSize bufferSize = sizeof(mVertices[0]) * mVertices.size();
 
-	if (vkCreateBuffer(mDevice, &bufferInfo, nullptr, mVertexBuffer.replace()) != VK_SUCCESS)
-		throw std::runtime_error("Failed to create vertex buffer!");
+	VkDeleter<VkBuffer> stagingBuffer{ mDevice, vkDestroyBuffer };
+	VkDeleter<VkDeviceMemory> stagingBufferMemory{ mDevice, vkFreeMemory };
 
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(mDevice, mVertexBuffer, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	if (vkAllocateMemory(mDevice, &allocInfo, nullptr, mVertexBufferMemory.replace()) != VK_SUCCESS)
-		throw std::runtime_error("Failed to allocate vertex buffer memory!");
-
-	vkBindBufferMemory(mDevice, mVertexBuffer, mVertexBufferMemory, 0);
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(mDevice, mVertexBufferMemory, 0, bufferInfo.size, 0, &data);
-	memcpy(data, mVertices.data(), (size_t)bufferInfo.size);
-	vkUnmapMemory(mDevice, mVertexBufferMemory);
+	vkMapMemory(mDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, mVertices.data(), (size_t)bufferSize);
+	vkUnmapMemory(mDevice, stagingBufferMemory);
+
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mVertexBuffer, mVertexBufferMemory);
+	copyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
 }
 
 void Application::createCommandBuffers()
@@ -528,6 +518,61 @@ void Application::createSemaphores()
 	if (vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, mImageAvailableSemaphore.replace()) != VK_SUCCESS ||
 		vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, mRenderFinishedSemaphore.replace()) != VK_SUCCESS)
 		throw std::runtime_error("Failed to create semaphores");
+}
+
+void Application::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags props, VkDeleter<VkBuffer>& buffer, VkDeleter<VkDeviceMemory>& bufferMemory)
+{
+	VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateBuffer(mDevice, &bufferInfo, nullptr, buffer.replace()) != VK_SUCCESS)
+		throw std::runtime_error("Failed to create buffer");
+
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(mDevice, buffer, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, props);
+
+	if (vkAllocateMemory(mDevice, &allocInfo, nullptr, bufferMemory.replace()) != VK_SUCCESS)
+		throw std::runtime_error("Failed to allocate buffer memory!");
+
+	vkBindBufferMemory(mDevice, buffer, bufferMemory, 0);
+}
+
+void Application::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	VkCommandBufferAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = mCommandPool;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(mDevice, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	VkBufferCopy copyRegion = {};
+	copyRegion.srcOffset = 0;
+	copyRegion.dstOffset = 0;
+	copyRegion.size = size;
+
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(mGraphicsQueue);
 }
 
 void Application::recreateSwapChain()
