@@ -57,6 +57,12 @@ struct Vertex {
 	}
 };
 
+struct UniformBufferObject {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
+};
+
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback);
 void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator);
 
@@ -78,11 +84,24 @@ private:
 	VkDeleter<VkDevice> mDevice{ vkDestroyDevice };
 	VkDeleter<VkSwapchainKHR> mSwapChain{ mDevice, vkDestroySwapchainKHR };
 	VkDeleter<VkRenderPass> mRenderPass{ mDevice, vkDestroyRenderPass };
+	VkDeleter<VkDescriptorSetLayout> mDescriptorSetLayout{ mDevice, vkDestroyDescriptorSetLayout };
 	VkDeleter<VkPipelineLayout> mPipelineLayout{ mDevice, vkDestroyPipelineLayout };
 	VkDeleter<VkPipeline> mGraphicsPipeline{ mDevice, vkDestroyPipeline };
 	VkDeleter<VkCommandPool> mCommandPool{ mDevice, vkDestroyCommandPool };
+
 	VkDeleter<VkBuffer> mVertexBuffer{ mDevice, vkDestroyBuffer };
 	VkDeleter<VkDeviceMemory> mVertexBufferMemory{ mDevice, vkFreeMemory };
+	
+	VkDeleter<VkBuffer> mIndexBuffer{ mDevice, vkDestroyBuffer };
+	VkDeleter<VkDeviceMemory> mIndexBufferMemory{ mDevice, vkFreeMemory };
+
+	VkDeleter<VkBuffer> mUniformBuffer{ mDevice, vkDestroyBuffer };
+	VkDeleter<VkDeviceMemory> mUniformBufferMemory{ mDevice, vkFreeMemory };
+
+	VkDeleter<VkDescriptorPool> mDescriptorPool{ mDevice, vkDestroyDescriptorPool };
+	VkDescriptorSet mDescriptorSet;
+
+	std::vector<VkCommandBuffer> mCommandBuffers;
 
 	VkDeleter<VkSemaphore> mImageAvailableSemaphore{ mDevice, vkDestroySemaphore };
 	VkDeleter<VkSemaphore> mRenderFinishedSemaphore{ mDevice, vkDestroySemaphore };
@@ -98,18 +117,21 @@ private:
 	VkExtent2D mSwapChainExtent;
 
 	std::vector<VkImage> mSwapChainImages;
-	std::vector<VkCommandBuffer> mCommandBuffers;
 
 	const unsigned int mWIDTH = 800;
 	const unsigned int mHEIGHT = 600;
 
-	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor", "VK_LAYER_NV_optimus", "VK_LAYER_VALVE_steam_overlay" };
+	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor" };
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-	const std::vector<Vertex> mVertices =
-	{
-		{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-		{{0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
-		{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+	const std::vector<Vertex> mVertices = {
+		{ { -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f } },
+		{ { 0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f } },
+		{ { 0.5f, 0.5f },{ 0.0f, 0.0f, 1.0f } },
+		{ { -0.5f, 0.5f },{ 1.0f, 1.0f, 1.0f } }
+	};
+
+	const std::vector<uint16_t> mIndices = {
+		0, 1, 2, 2, 3, 0
 	};
 
 #ifdef NDEBUG
@@ -157,10 +179,15 @@ private:
 	void createSwapChain();
 	void createImageViews();
 	void createRenderPass();
+	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
 	void createFramebuffers();
 	void createCommandPool();
 	void createVertexBuffer();
+	void createIndexBuffer();
+	void createUniformBuffer();
+	void createDescriptorPool();
+	void createDescriptorSet();
 	void createCommandBuffers();
 	void createSemaphores();
 
@@ -168,6 +195,7 @@ private:
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	void recreateSwapChain();
+	void updateUniformBuffer();
 
 	void initVulkan();
 
