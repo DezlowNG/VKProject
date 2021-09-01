@@ -11,6 +11,9 @@ int main()
 	catch (const std::exception& ex)
 	{
 		std::cerr << ex.what() << '\n';
+		
+		delete app;
+
 		return EXIT_FAILURE;
 	}
 
