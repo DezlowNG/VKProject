@@ -12,21 +12,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
-#include <Camera/Camera.h>
-
-Camera camera;
-
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-float lastX = 0.0f;
-float lastY = 0.0f;
-bool firstMouse = true;
-
-static void processInput(GLFWwindow* window)
-{
-	camera.ProcessKeyboard(window, deltaTime);
-}
-
 void Application::createInstance()
 {
 	if (mEnableValidationLayers && !checkValidationLayerSupport())
@@ -459,17 +444,16 @@ void Application::drawScene()
 
 void Application::mainLoop()
 {
-	double currentFrame = 0.0f;
+	lastX = mSwapChainExtent.width / 2.0f;
+	lastY = mSwapChainExtent.height / 2.0f;
 
 	while (!glfwWindowShouldClose(mWindow))
 	{
-		currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
 		glfwPollEvents();
 
-		processInput(mWindow);
+		calculateDelta();
+
+		mCamera.ProcessKeyboard(mWindow, deltaTime);
 
 		updateUniformBuffer();
 		drawScene();
@@ -810,7 +794,7 @@ void Application::updateUniformBuffer()
 
 	UniformBufferObject ubo{};
 	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.view = camera.GetViewMatrix();
+	ubo.view = mCamera.GetViewMatrix();
 	ubo.proj = glm::perspective(glm::radians(45.0f), (static_cast<float>(mSwapChainExtent.width) / static_cast<float>(mSwapChainExtent.height)), 0.1f, 10.0f);
 	ubo.proj[1][1] *= -1;
 
@@ -842,7 +826,15 @@ void Application::onWindowCallback(GLFWwindow* window, int key, int scancode, in
 
 void Application::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	camera.ProcessMouseMovement(xpos, ypos, lastX, lastY);
+	Application* app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+	app->mCamera.ProcessMouseMovement(xpos, ypos, app->lastX, app->lastY);
+}
+
+void Application::calculateDelta()
+{
+	currentFrame = glfwGetTime();
+	deltaTime = currentFrame - lastFrame;
+	lastFrame = currentFrame;
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Application::debugCallback(

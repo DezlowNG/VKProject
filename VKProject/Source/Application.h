@@ -9,6 +9,8 @@
 
 #include <glm/glm.hpp>
 
+#include <Camera/Camera.h>
+
 struct QueueFamilyIndices
 {
 	int graphicsFamily = -1;
@@ -85,6 +87,13 @@ public:
 private:
 	GLFWwindow* mWindow = nullptr;
 
+	double currentFrame = 0.0f;
+
+	float deltaTime = 0.0f;
+	float lastFrame = 0.0f;
+	float lastX = 0.0f;
+	float lastY = 0.0f;
+
 	VkDeleter<VkInstance> mInstance{ vkDestroyInstance };
 	VkDeleter<VkDebugReportCallbackEXT> mCallback{ mInstance, DestroyDebugReportCallbackEXT };
 	VkDeleter<VkSurfaceKHR> mSurface{ mInstance, vkDestroySurfaceKHR };
@@ -133,6 +142,8 @@ private:
 	const unsigned int mWIDTH = 800;
 	const unsigned int mHEIGHT = 600;
 
+	Camera mCamera;
+
 	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor" };
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	const std::vector<Vertex> mVertices = {
@@ -167,6 +178,8 @@ private:
 	static void onWindowResized(GLFWwindow* window, int width, int height);
 	static void onWindowCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
+	void calculateDelta();
 
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);

@@ -160,11 +160,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
+    <ClCompile Include="Source\Camera\Camera.cpp" />
     <ClCompile Include="Source\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Source\Application.h" />
-    <ClInclude Include="Source\VkDeleter.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\GLFW\GLFW.vcxproj">
@@ -173,6 +170,11 @@
     <ProjectReference Include="..\ThirdParty\Vulkan\Vulkan.vcxproj">
       <Project>{23be72ba-0d8b-45f3-a0d1-d4b3bcc3fc9f}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Application.h" />
+    <ClInclude Include="Source\Camera\Camera.h" />
+    <ClInclude Include="Source\VkDeleter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
