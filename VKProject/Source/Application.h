@@ -7,7 +7,12 @@
 #include <GLFW/glfw3.h>
 #include <VkDeleter.h>
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_RADIANS
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
 
 #include <Camera/Camera.h>
 
@@ -27,14 +32,12 @@ struct SwapChainSupportDetails
 };
 
 struct Vertex {
-	glm::vec2 pos;
+	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 texCoord;
 
-	static VkVertexInputBindingDescription getBindingDescription()
-	{
-		VkVertexInputBindingDescription bindingDescription = {};
-
+	static VkVertexInputBindingDescription getBindingDescription() {
+		VkVertexInputBindingDescription bindingDescription{};
 		bindingDescription.binding = 0;
 		bindingDescription.stride = sizeof(Vertex);
 		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -42,13 +45,12 @@ struct Vertex {
 		return bindingDescription;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions()
-	{
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
-		
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
 		attributeDescriptions[1].binding = 0;
@@ -63,10 +65,38 @@ struct Vertex {
 
 		return attributeDescriptions;
 	}
+
+	bool operator==(const Vertex& other) const {
+		return pos == other.pos && color == other.color && texCoord == other.texCoord;
+	}
 };
 
-struct UniformBufferObject
+#include <iostream>
+#include <fstream>
+#include <stdexcept>
+#include <algorithm>
+#include <chrono>
+#include <vector>
+#include <cstring>
+#include <cstdlib>
+#include <cstdint>
+#include <array>
+#include <optional>
+#include <set>
+#include <unordered_map>
+
+namespace std 
 {
+	template<> struct hash<Vertex>
+	{
+		size_t operator()(Vertex const& vertex) const
+		{
+			return ((std::hash<glm::vec3>()(vertex.pos) ^ (std::hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (std::hash<glm::vec2>()(vertex.texCoord) << 1);
+		}
+	};
+}
+
+struct UniformBufferObject {
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
@@ -105,6 +135,10 @@ private:
 	VkDeleter<VkPipeline> mGraphicsPipeline{ mDevice, vkDestroyPipeline };
 	VkDeleter<VkCommandPool> mCommandPool{ mDevice, vkDestroyCommandPool };
 
+	VkDeleter<VkImage> mDepthImage{ mDevice, vkDestroyImage };
+	VkDeleter<VkDeviceMemory> mDepthImageMemory{ mDevice, vkFreeMemory };
+	VkDeleter<VkImageView> mDepthImageView{ mDevice, vkDestroyImageView };
+
 	VkDeleter<VkImage> mTextureImage{ mDevice, vkDestroyImage };
 	VkDeleter<VkDeviceMemory> mTextureImageMemory{ mDevice, vkFreeMemory };
 	VkDeleter<VkImageView> mTextureImageView{ mDevice, vkDestroyImageView };
@@ -139,23 +173,20 @@ private:
 
 	std::vector<VkImage> mSwapChainImages;
 
-	const unsigned int mWIDTH = 800;
-	const unsigned int mHEIGHT = 600;
+	const unsigned int mWIDTH = 1600;
+	const unsigned int mHEIGHT = 900;
 
 	Camera mCamera;
+	bool mCameraInput = true;
 
 	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor" };
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-	const std::vector<Vertex> mVertices = {
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-	};
 
-	const std::vector<uint16_t> mIndices = {
-		0, 1, 2, 2, 3, 0
-	};
+	std::vector<Vertex> mVertices;
+	std::vector<uint32_t> mIndices;
+
+	const std::string MODEL_PATH = "Models/viking_room.obj";
+	const std::string TEXTURE_PATH = "Textures/viking_room.png";
 
 #ifdef NDEBUG
 	const bool mEnableValidationLayers = false;
@@ -189,10 +220,13 @@ private:
 	bool checkValidationLayerSupport();
 	bool isDeviceSuitable(VkPhysicalDevice device);
 	bool checkDeviceExtensionsSupport(VkPhysicalDevice device);
+	bool hasStencilComponent(VkFormat format);
 
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+	VkFormat findSupportedFormat(const std::vector<VkFormat>& canditates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	VkFormat findDepthFormat();
 
 	void createShaderModule(const std::vector<char>& code, VkDeleter<VkShaderModule>& shaderModule);
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
@@ -201,7 +235,7 @@ private:
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 	void copyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
-	void createImageView(VkImage image, VkFormat format, VkDeleter<VkImageView>& imageView);
+	void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkDeleter<VkImageView>& imageView);
 
 	void initWindow();
 
@@ -217,9 +251,11 @@ private:
 	void createGraphicsPipeline();
 	void createFramebuffers();
 	void createCommandPool();
+	void createDepthResources();
 	void createTextureImage();
 	void createTextureImageView();
 	void createTextureSampler();
+	void loadModel();
 	void createVertexBuffer();
 	void createIndexBuffer();
 	void createUniformBuffer();
