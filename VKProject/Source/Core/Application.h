@@ -5,7 +5,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <VkDeleter.h>
+#include <Core/Vulkan/VkDeleter.h>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_RADIANS
@@ -14,7 +14,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 
-#include <Camera/Camera.h>
+#include <Components/Camera/Camera.h>
 
 struct QueueFamilyIndices
 {
@@ -71,20 +71,6 @@ struct Vertex {
 	}
 };
 
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <algorithm>
-#include <chrono>
-#include <vector>
-#include <cstring>
-#include <cstdlib>
-#include <cstdint>
-#include <array>
-#include <optional>
-#include <set>
-#include <unordered_map>
-
 namespace std 
 {
 	template<> struct hash<Vertex>
@@ -100,6 +86,7 @@ struct UniformBufferObject {
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
+	float deltaTime;
 };
 
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback);

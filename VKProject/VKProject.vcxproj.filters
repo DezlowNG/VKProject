@@ -1,39 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Исходные файлы">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4776d0a0-2b9e-471f-b455-b5f6dae3aef1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Файлы заголовков">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Source\Core">
+      <UniqueIdentifier>{03e6acc6-54da-4951-8a95-404e122c672a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Файлы ресурсов">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Source\Core\Vulkan">
+      <UniqueIdentifier>{f2e29856-bf64-4aeb-a077-f4fbc1369fbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{026a2f8b-9341-4af9-9531-bbfe6ca918fb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Components\Camera\Camera.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
     <ClCompile Include="Source\main.cpp">
-      <Filter>Исходные файлы</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Application.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Camera\Camera.cpp">
-      <Filter>Исходные файлы</Filter>
+    <ClCompile Include="Source\Core\Application.cpp">
+      <Filter>Source\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Application.h">
-      <Filter>Файлы заголовков</Filter>
+    <ClInclude Include="Source\Core\Vulkan\VkDeleter.h">
+      <Filter>Source\Core\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="Source\VkDeleter.h">
-      <Filter>Файлы заголовков</Filter>
+    <ClInclude Include="Source\Components\Camera\Camera.h">
+      <Filter>Source\Components</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Camera\Camera.h">
-      <Filter>Файлы заголовков</Filter>
+    <ClInclude Include="Source\Core\Application.h">
+      <Filter>Source\Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

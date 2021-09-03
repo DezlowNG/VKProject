@@ -159,8 +159,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Application.cpp" />
-    <ClCompile Include="Source\Camera\Camera.cpp" />
+    <ClCompile Include="Source\Core\Application.cpp" />
+    <ClCompile Include="Source\Components\Camera\Camera.cpp" />
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -172,9 +172,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Application.h" />
-    <ClInclude Include="Source\Camera\Camera.h" />
-    <ClInclude Include="Source\VkDeleter.h" />
+    <ClInclude Include="Source\Core\Application.h" />
+    <ClInclude Include="Source\Components\Camera\Camera.h" />
+    <ClInclude Include="Source\Core\Vulkan\VkDeleter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

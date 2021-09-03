@@ -1,192 +1,183 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Исходные файлы">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Файлы заголовков">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Файлы ресурсов">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Source">
+      <UniqueIdentifier>{b2090306-145f-488a-813c-8568657c034d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\vk_enum_string_helper.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vk_icd.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vk_layer.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vk_platform.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vk_sdk_platform.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_android.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_beta.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_core.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_directfb.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_enums.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_fuchsia.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_funcs.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_ggp.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_handles.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_ios.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_macos.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_metal.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_raii.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_screen.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_structs.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_vi.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_wayland.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_win32.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_xcb.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_xlib.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\vulkan_xlib_xrandr.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vk_enum_string_helper.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vk_icd.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vk_icd.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vk_layer.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vk_layer.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vk_platform.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vk_platform.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vk_sdk_platform.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vk_sdk_platform.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan.hpp">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan.hpp">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_android.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_android.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_beta.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_beta.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_core.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_core.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_directfb.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_directfb.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_enums.hpp">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_enums.hpp">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_fuchsia.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_fuchsia.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_funcs.hpp">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_funcs.hpp">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_ggp.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_ggp.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_handles.hpp">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_handles.hpp">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_ios.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_ios.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_macos.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_macos.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_metal.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_metal.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_raii.hpp">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_raii.hpp">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_screen.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_screen.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_structs.hpp">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_structs.hpp">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_vi.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_vi.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_wayland.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_wayland.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_win32.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_win32.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_xcb.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_xcb.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_xlib.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_xlib.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vulkan_xlib_xrandr.h">
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="vulkan_xlib_xrandr.h">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Исходные файлы</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
