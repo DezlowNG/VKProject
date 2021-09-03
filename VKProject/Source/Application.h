@@ -124,6 +124,8 @@ private:
 	float lastX = 0.0f;
 	float lastY = 0.0f;
 
+	uint32_t mMipLevels = 0;
+
 	VkDeleter<VkInstance> mInstance{ vkDestroyInstance };
 	VkDeleter<VkDebugReportCallbackEXT> mCallback{ mInstance, DestroyDebugReportCallbackEXT };
 	VkDeleter<VkSurfaceKHR> mSurface{ mInstance, vkDestroySurfaceKHR };
@@ -134,6 +136,10 @@ private:
 	VkDeleter<VkPipelineLayout> mPipelineLayout{ mDevice, vkDestroyPipelineLayout };
 	VkDeleter<VkPipeline> mGraphicsPipeline{ mDevice, vkDestroyPipeline };
 	VkDeleter<VkCommandPool> mCommandPool{ mDevice, vkDestroyCommandPool };
+
+	VkDeleter<VkImage> mColorImage{ mDevice, vkDestroyImage };
+	VkDeleter<VkDeviceMemory> mColorImageMemory{ mDevice, vkFreeMemory };
+	VkDeleter<VkImageView> mColorImageView{ mDevice, vkDestroyImageView };
 
 	VkDeleter<VkImage> mDepthImage{ mDevice, vkDestroyImage };
 	VkDeleter<VkDeviceMemory> mDepthImageMemory{ mDevice, vkFreeMemory };
@@ -188,6 +194,8 @@ private:
 	const std::string MODEL_PATH = "Models/viking_room.obj";
 	const std::string TEXTURE_PATH = "Textures/viking_room.png";
 
+	VkSampleCountFlagBits mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
 #ifdef NDEBUG
 	const bool mEnableValidationLayers = false;
 #else
@@ -227,15 +235,19 @@ private:
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& canditates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
+	VkSampleCountFlagBits getMaxUsableSampleCount();
 
 	void createShaderModule(const std::vector<char>& code, VkDeleter<VkShaderModule>& shaderModule);
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
-	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags props, VkDeleter<VkImage>& image, VkDeleter<VkDeviceMemory>& imageMemory);
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags props, VkDeleter<VkImage>& image, VkDeleter<VkDeviceMemory>& imageMemory, uint32_t mipLevels, VkSampleCountFlagBits numSamples);
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevel);
 	void copyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
-	void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkDeleter<VkImageView>& imageView);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+	void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkDeleter<VkImageView>& imageView, uint32_t mipLevels);
+	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
+	void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
 	void initWindow();
 
@@ -251,6 +263,7 @@ private:
 	void createGraphicsPipeline();
 	void createFramebuffers();
 	void createCommandPool();
+	void createColorResources();
 	void createDepthResources();
 	void createTextureImage();
 	void createTextureImageView();
