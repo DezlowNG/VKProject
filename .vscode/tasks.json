@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": 
+    [
+        {
+            "label": "echo",
+            "type": "shell",
+            "command": "cd ${fileDirname} ; glslangValidator.exe -V ${fileBasename}",
+            "problemMatcher": [],
+            "group":
+            {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
