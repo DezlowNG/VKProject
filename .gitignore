@@ -3,3 +3,4 @@
 .git/
 bin/
 bin-int/
+*.spv
