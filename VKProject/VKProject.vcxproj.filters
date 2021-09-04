@@ -24,6 +24,7 @@
     <ClCompile Include="Source\Core\Application.cpp">
       <Filter>Source\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Core\CfgParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Vulkan\VkDeleter.h">
@@ -35,5 +36,6 @@
     <ClInclude Include="Source\Core\Application.h">
       <Filter>Source\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Core\CfgParser.h" />
   </ItemGroup>
 </Project>

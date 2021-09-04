@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\CfgParser.cpp" />
     <ClCompile Include="Source\Core\Application.cpp" />
     <ClCompile Include="Source\Components\Camera\Camera.cpp" />
     <ClCompile Include="Source\main.cpp" />
@@ -172,6 +173,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\CfgParser.h" />
     <ClInclude Include="Source\Core\Application.h" />
     <ClInclude Include="Source\Components\Camera\Camera.h" />
     <ClInclude Include="Source\Core\Vulkan\VkDeleter.h" />

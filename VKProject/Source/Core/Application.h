@@ -3,6 +3,8 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include <map>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <Core/Vulkan/VkDeleter.h>
@@ -82,11 +84,11 @@ namespace std
 	};
 }
 
-struct UniformBufferObject {
+struct UniformBufferObject
+{
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
-	float deltaTime;
 };
 
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback);
@@ -95,6 +97,9 @@ void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT
 class Application
 {
 public:
+	Application();
+	~Application();
+
 	void Run()
 	{
 		initWindow();
@@ -172,7 +177,7 @@ private:
 	Camera mCamera;
 	bool mCameraInput = true;
 
-	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor" };
+	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor"};
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 	std::vector<Vertex> mVertices;
@@ -181,7 +186,6 @@ private:
 	const std::string MODEL_PATH = "Models/viking_room.obj";
 	const std::string TEXTURE_PATH = "Textures/viking_room.png";
 
-	VkSampleCountFlagBits mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
 #ifdef NDEBUG
 	const bool mEnableValidationLayers = false;
@@ -223,6 +227,13 @@ private:
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& canditates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
 	VkSampleCountFlagBits getMaxUsableSampleCount();
+
+	std::map<std::string, uint32_t> mConfigs;
+
+	bool mMipMapsEnable = false;
+	bool mSampleRateShadingEnable = false;
+	uint32_t mAnisatropyLevel = 0;
+	VkSampleCountFlagBits mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
 	void createShaderModule(const std::vector<char>& code, VkDeleter<VkShaderModule>& shaderModule);
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);

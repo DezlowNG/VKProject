@@ -10,6 +10,82 @@
 #include <set>
 #include <fstream>
 
+#include <Core/CfgParser.h>
+
+Application::Application()
+{
+	CfgParser cfgs;
+	std::string configs = cfgs.GetConfigs();
+	std::string temp = configs;
+	std::string line = configs;
+	
+	std::vector<std::string> cfgList;
+
+	line.erase(line.find("\n"), line.find("\0") + line.size());
+	cfgList.push_back(line);
+
+	for (size_t i = 0; i < 3; i++)
+	{
+		temp.erase(0, line.size() + 1);
+		temp.erase(temp.find("\n"), temp.find("\0") + temp.size());
+		cfgList.push_back(temp);
+		line += "\n";
+		line += temp;
+
+		temp = configs;
+	}
+
+	std::cout << "Graphics Settings:\n";
+
+	for (auto cfg : cfgList)
+	{
+		temp = cfg;
+		cfg.erase(0, cfg.find("=") + 1);
+		temp.erase(temp.find("="), temp.find("=") + cfg.size());
+
+		mConfigs[temp] = atoi(cfg.c_str());
+
+		std::cout << temp << "=" << cfg << '\n';
+	}
+
+	mMipMapsEnable = mConfigs["MIPMAPS"];
+	mSampleRateShadingEnable = mConfigs["SAMPLE_RATE_SHADING"];
+	switch (mConfigs["MSAA"])
+	{
+	case 0:
+		mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		break;
+	case 1:
+		mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		break;
+	case 2:
+		mMSAASamples = VK_SAMPLE_COUNT_2_BIT;
+		break;
+	case 4:
+		mMSAASamples = VK_SAMPLE_COUNT_4_BIT;
+		break;
+	case 8:
+		mMSAASamples = VK_SAMPLE_COUNT_8_BIT;
+		break;
+	case 16:
+		mMSAASamples = VK_SAMPLE_COUNT_16_BIT;
+		break;
+	case 32:
+		mMSAASamples = VK_SAMPLE_COUNT_32_BIT;
+		break;
+	case 64:
+		mMSAASamples = VK_SAMPLE_COUNT_64_BIT;
+		break;
+	default:
+		break;
+	}
+	mAnisatropyLevel = mConfigs["ANISOTROPY"];
+}
+
+Application::~Application()
+{
+}
+
 void Application::loadModel()
 {
 	tinyobj::attrib_t attrib;
@@ -106,13 +182,29 @@ void Application::pickPhysicalDevice()
 		if (isDeviceSuitable(device))
 		{
 			mPhysDevice = device;
-			mMSAASamples = getMaxUsableSampleCount();
 			break;
 		}
 	}
 
 	if (mPhysDevice == VK_NULL_HANDLE)
 		throw std::runtime_error("Failed to find a suitable GPU!");
+
+	VkPhysicalDeviceProperties props;
+	vkGetPhysicalDeviceProperties(mPhysDevice, &props);
+
+	std::cout << "\n";
+
+	for (size_t i = 0; i < 50; i++)
+		std::cout << "=";
+
+	std::cout << "\n\n";
+
+	std::cout << "Device Properties:\n";
+
+	std::cout << "Name = " << props.deviceName << '\n';
+	std::cout << "Max Anisotropy level = " << props.limits.maxSamplerAnisotropy << '\n';
+	std::cout << "Max MSAA level = " << props.limits.framebufferColorSampleCounts << '\n';
+	std::cout << "Max memory usage = " << props.limits.maxMemoryAllocationCount << "Mb" << '\n';
 }
 
 void Application::createLogicalDevice()
@@ -134,8 +226,22 @@ void Application::createLogicalDevice()
 	}
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
-	deviceFeatures.sampleRateShading = VK_TRUE;
-	deviceFeatures.samplerAnisotropy = VK_TRUE;
+	if (!(mAnisatropyLevel <= 0))
+	{
+		deviceFeatures.samplerAnisotropy = VK_TRUE;
+	}
+	else
+	{
+		deviceFeatures.samplerAnisotropy = VK_FALSE;
+	}
+	if (mSampleRateShadingEnable)
+	{
+		deviceFeatures.sampleRateShading = VK_TRUE;
+	}
+	else
+	{
+		deviceFeatures.sampleRateShading = VK_FALSE;
+	}
 
 	VkDeviceCreateInfo createInfo{ VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -784,15 +890,30 @@ void Application::createTextureSampler()
 	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.anisotropyEnable = VK_TRUE;
-	samplerInfo.maxAnisotropy = 16;
+	if (!(mAnisatropyLevel <= 0))
+	{
+		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.maxAnisotropy = mAnisatropyLevel;
+	}
+	else
+	{
+		samplerInfo.anisotropyEnable = VK_FALSE;
+		samplerInfo.maxAnisotropy = 16;
+	}
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerInfo.unnormalizedCoordinates = VK_FALSE;
 	samplerInfo.compareEnable = VK_TRUE;
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = static_cast<float>(mMipLevels);
+	if (mMipMapsEnable)
+	{
+		samplerInfo.maxLod = static_cast<float>(mMipLevels);
+	}
+	else
+	{
+		samplerInfo.maxLod = 0.0f;
+	}
 	samplerInfo.mipLodBias = 0.0f;
 
 	if (vkCreateSampler(mDevice, &samplerInfo, nullptr, mTextureSampler.replace()) != VK_SUCCESS)
@@ -945,7 +1066,7 @@ void Application::createCommandBuffers()
 
 		vkCmdBindDescriptorSets(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSet, 0, nullptr);
 
-		vkCmdDrawIndexed(mCommandBuffers[i], mIndices.size(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(mCommandBuffers[i], mIndices.size(), 100, 0, 0, 1);
 
 		vkCmdEndRenderPass(mCommandBuffers[i]);
 
@@ -1017,7 +1138,6 @@ void Application::updateUniformBuffer()
 	ubo.view = mCamera.GetViewMatrix();
 	ubo.proj = glm::perspective(glm::radians(45.0f), (static_cast<float>(mSwapChainExtent.width) / static_cast<float>(mSwapChainExtent.height)), 0.1f, 100.0f);
 	ubo.proj[1][1] *= -1;
-	ubo.deltaTime = deltaTime;
 
 	void* data;
 	vkMapMemory(mDevice, mUniformBufferMemory, 0, sizeof(ubo), 0, &data);
