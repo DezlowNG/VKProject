@@ -3,4 +3,4 @@
 .git/
 bin/
 bin-int/
-*.spv
+VKProject/user.cfg
