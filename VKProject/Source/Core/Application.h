@@ -35,10 +35,11 @@ struct SwapChainSupportDetails
 
 struct Vertex {
 	glm::vec3 pos;
-	glm::vec3 color;
-	glm::vec2 texCoord;
+	glm::vec3 normal;
+	glm::vec2 texCoords;
 
-	static VkVertexInputBindingDescription getBindingDescription() {
+	static VkVertexInputBindingDescription getBindingDescription()
+	{
 		VkVertexInputBindingDescription bindingDescription{};
 		bindingDescription.binding = 0;
 		bindingDescription.stride = sizeof(Vertex);
@@ -47,7 +48,8 @@ struct Vertex {
 		return bindingDescription;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() 
+	{
 		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
 		attributeDescriptions[0].binding = 0;
@@ -58,18 +60,19 @@ struct Vertex {
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex, color);
+		attributeDescriptions[1].offset = offsetof(Vertex, normal);
 
 		attributeDescriptions[2].binding = 0;
 		attributeDescriptions[2].location = 2;
 		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+		attributeDescriptions[2].offset = offsetof(Vertex, texCoords);
 
 		return attributeDescriptions;
 	}
 
-	bool operator==(const Vertex& other) const {
-		return pos == other.pos && color == other.color && texCoord == other.texCoord;
+	bool operator==(const Vertex& other) const 
+	{
+		return pos == other.pos && normal == other.normal && texCoords == other.texCoords;
 	}
 };
 
@@ -79,7 +82,7 @@ namespace std
 	{
 		size_t operator()(Vertex const& vertex) const
 		{
-			return ((std::hash<glm::vec3>()(vertex.pos) ^ (std::hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (std::hash<glm::vec2>()(vertex.texCoord) << 1);
+			return ((std::hash<glm::vec3>()(vertex.pos) ^ (std::hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^ (std::hash<glm::vec2>()(vertex.texCoords) << 1);
 		}
 	};
 }
@@ -89,6 +92,8 @@ struct UniformBufferObject
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
+	glm::vec3 lightPos;
+	glm::vec3 viewPos;
 };
 
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback);
@@ -181,6 +186,7 @@ private:
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 	std::vector<Vertex> mVertices;
+
 	std::vector<uint32_t> mIndices;
 
 	const std::string MODEL_PATH = "Models/viking_room.obj";

@@ -99,23 +99,38 @@ void Application::loadModel()
 
 	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
-	for (const auto& shape : shapes) {
-		for (const auto& index : shape.mesh.indices) {
+	for (const auto& shape : shapes)
+	{
+		for (const auto& index : shape.mesh.indices) 
+		{
 			Vertex vertex{};
 
-			vertex.pos = {
-				attrib.vertices[3 * index.vertex_index + 0],
-				attrib.vertices[3 * index.vertex_index + 1],
-				attrib.vertices[3 * index.vertex_index + 2]
-			};
+			if (index.vertex_index >= 0)
+			{
+				vertex.pos = {
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
+				};
+			}
 
-			vertex.texCoord = {
-				attrib.texcoords[2 * index.texcoord_index + 0],
-				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-			};
+			if (index.normal_index >= 0)
+			{
+				vertex.normal = {
+					attrib.normals[3 * size_t(index.normal_index) + 0],
+					attrib.normals[3 * size_t(index.normal_index) + 1],
+					attrib.normals[3 * size_t(index.normal_index) + 2]
+				};
+			}
 
-			vertex.color = { 1.0f, 1.0f, 1.0f };
-
+			if (index.texcoord_index >= 0)
+			{
+				vertex.texCoords = {
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
+			}
+			
 			if (uniqueVertices.count(vertex) == 0) {
 				uniqueVertices[vertex] = static_cast<uint32_t>(mVertices.size());
 				mVertices.push_back(vertex);
@@ -442,7 +457,14 @@ void Application::createDescriptorSetLayout()
 	samplerLayoutBinding.pImmutableSamplers = nullptr;
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+	VkDescriptorSetLayoutBinding ubofLayoutBinding{};
+	ubofLayoutBinding.binding = 2;
+	ubofLayoutBinding.descriptorCount = 1;
+	ubofLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	ubofLayoutBinding.pImmutableSamplers = nullptr;
+	ubofLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::array<VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBinding, samplerLayoutBinding, ubofLayoutBinding };
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
 	layoutInfo.bindingCount = bindings.size();
@@ -631,7 +653,9 @@ void Application::drawScene()
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	if (vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+	VkResult res = vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+
+	if (res != VK_SUCCESS)
 		throw std::runtime_error("failed to submit draw command buffer!");
 
 	VkPresentInfoKHR presentInfo{ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
@@ -1066,7 +1090,7 @@ void Application::createCommandBuffers()
 
 		vkCmdBindDescriptorSets(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSet, 0, nullptr);
 
-		vkCmdDrawIndexed(mCommandBuffers[i], mIndices.size(), 100, 0, 0, 1);
+		vkCmdDrawIndexed(mCommandBuffers[i], mIndices.size(), 1, 0, 0, 1);
 
 		vkCmdEndRenderPass(mCommandBuffers[i]);
 
@@ -1134,10 +1158,15 @@ void Application::recreateSwapChain()
 void Application::updateUniformBuffer()
 {
 	UniformBufferObject ubo{};
-	ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+	ubo.model= model;
 	ubo.view = mCamera.GetViewMatrix();
-	ubo.proj = glm::perspective(glm::radians(45.0f), (static_cast<float>(mSwapChainExtent.width) / static_cast<float>(mSwapChainExtent.height)), 0.1f, 100.0f);
+	ubo.proj = glm::perspective(glm::radians(45.0f), (static_cast<float>(mSwapChainExtent.width) / static_cast<float>(mSwapChainExtent.height)), 0.1f, 100.0f);	
 	ubo.proj[1][1] *= -1;
+	ubo.lightPos = glm::vec3(0.0f, 2.0f, 2.0f);
+	ubo.viewPos = mCamera.Position;
 
 	void* data;
 	vkMapMemory(mDevice, mUniformBufferMemory, 0, sizeof(ubo), 0, &data);
