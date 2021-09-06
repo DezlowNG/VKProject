@@ -163,6 +163,13 @@
     <ClCompile Include="Source\Core\Application.cpp" />
     <ClCompile Include="Source\Components\Camera\Camera.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="..\ThirdParty\ImGui\imgui.cpp" />
+    <ClCompile Include="..\ThirdParty\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="..\ThirdParty\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="..\ThirdParty\ImGui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\ThirdParty\ImGui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\ThirdParty\ImGui\imgui_tables.cpp" />
+    <ClCompile Include="..\ThirdParty\ImGui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\GLFW\GLFW.vcxproj">
