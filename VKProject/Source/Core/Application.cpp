@@ -117,9 +117,9 @@ void Application::loadModel()
 			if (index.normal_index >= 0)
 			{
 				vertex.normal = {
-					attrib.normals[3 * size_t(index.normal_index) + 0],
-					attrib.normals[3 * size_t(index.normal_index) + 1],
-					attrib.normals[3 * size_t(index.normal_index) + 2]
+					attrib.normals[3 * index.normal_index + 0],
+					attrib.normals[3 * index.normal_index + 1],
+					attrib.normals[3 * index.normal_index + 2]
 				};
 			}
 
@@ -241,7 +241,7 @@ void Application::createLogicalDevice()
 	}
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
-	if (!(mAnisatropyLevel <= 0))
+	if (mAnisatropyLevel > 0)
 	{
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
 	}
@@ -457,14 +457,7 @@ void Application::createDescriptorSetLayout()
 	samplerLayoutBinding.pImmutableSamplers = nullptr;
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	VkDescriptorSetLayoutBinding ubofLayoutBinding{};
-	ubofLayoutBinding.binding = 2;
-	ubofLayoutBinding.descriptorCount = 1;
-	ubofLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	ubofLayoutBinding.pImmutableSamplers = nullptr;
-	ubofLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	std::array<VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBinding, samplerLayoutBinding, ubofLayoutBinding };
+	std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
 	layoutInfo.bindingCount = bindings.size();
@@ -551,10 +544,8 @@ void Application::createGraphicsPipeline()
 	colorBlending.logicOp = VK_LOGIC_OP_COPY;
 	colorBlending.attachmentCount = 1;
 	colorBlending.pAttachments = &colorBlendAttachment;
-	colorBlending.blendConstants[0] = 0.0f;
-	colorBlending.blendConstants[1] = 0.0f;
-	colorBlending.blendConstants[2] = 0.0f;
-	colorBlending.blendConstants[3] = 0.0f;
+	for (size_t i = 0; i < 3; i++)
+		colorBlending.blendConstants[i] = 0.0f;
 
 	VkDescriptorSetLayout setLayouts[] = { mDescriptorSetLayout };
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{ VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
@@ -621,6 +612,7 @@ void Application::initVulkan()
 	createDescriptorSet();
 	createCommandBuffers();
 	createSemaphores();
+	InitImGui();
 }
 
 void Application::drawScene()
@@ -704,7 +696,10 @@ void Application::createColorResources()
 {
 	VkFormat colorFormat = mSwapChainImageFormat;
 
-	createImage(mSwapChainExtent.width, mSwapChainExtent.height, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mColorImage, mColorImageMemory, 1, mMSAASamples);
+	createImage(mSwapChainExtent.width, mSwapChainExtent.height, colorFormat, VK_IMAGE_TILING_OPTIMAL, 
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		mColorImage, mColorImageMemory, 1, mMSAASamples);
+	
 	createImageView(mColorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT,mColorImageView, 1);
 
 	transitionImageLayout(mColorImage, colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1);
@@ -716,7 +711,8 @@ void Application::createFramebuffers()
 	
 	for (uint32_t i = 0; i < mSwapChainImageViews.size(); i++)
 	{
-		std::array<VkImageView, 3> attachments = {
+		std::array<VkImageView, 3> attachments =
+		{
 				mColorImageView,
 				mDepthImageView,
 				mSwapChainImageViews[i]
@@ -751,7 +747,10 @@ void Application::createDepthResources()
 {
 	VkFormat depthFormat = findDepthFormat();
 
-	createImage(mSwapChainExtent.width, mSwapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mDepthImage, mDepthImageMemory, 1, mMSAASamples);
+	createImage(mSwapChainExtent.width, mSwapChainExtent.height, depthFormat, 
+		VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		mDepthImage, mDepthImageMemory, 1, mMSAASamples);
+	
 	createImageView(mDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, mDepthImageView, 1);
 
 	transitionImageLayout(mDepthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
@@ -770,7 +769,8 @@ void Application::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t wid
 	region.imageSubresource.baseArrayLayer = 0;
 	region.imageSubresource.layerCount = 1;
 	region.imageOffset = { 0, 0, 0 };
-	region.imageExtent = {
+	region.imageExtent = 
+	{
 		width,
 		height,
 		1
@@ -809,8 +809,7 @@ void Application::createTextureImage()
 
 	transitionImageLayout(mTextureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mMipLevels);
 	copyBufferToImage(stagingBuffer, mTextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-	//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
-
+	
 	generateMipmaps(mTextureImage, VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, mMipLevels);
 }
 
@@ -914,7 +913,7 @@ void Application::createTextureSampler()
 	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	if (!(mAnisatropyLevel <= 0))
+	if (mAnisatropyLevel > 0)
 	{
 		samplerInfo.anisotropyEnable = VK_TRUE;
 		samplerInfo.maxAnisotropy = mAnisatropyLevel;
@@ -922,7 +921,7 @@ void Application::createTextureSampler()
 	else
 	{
 		samplerInfo.anisotropyEnable = VK_FALSE;
-		samplerInfo.maxAnisotropy = 16;
+		samplerInfo.maxAnisotropy = 0;
 	}
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerInfo.unnormalizedCoordinates = VK_FALSE;
@@ -1010,7 +1009,7 @@ void Application::createDescriptorSet()
 	imageInfo.sampler = mTextureSampler;
 
 	VkDescriptorSetLayout layouts[] = { mDescriptorSetLayout };
-	VkDescriptorSetAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+	VkDescriptorSetAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
 	allocInfo.descriptorPool = mDescriptorPool;
 	allocInfo.descriptorSetCount = 1;
 	allocInfo.pSetLayouts = layouts;
@@ -1018,12 +1017,12 @@ void Application::createDescriptorSet()
 	if (vkAllocateDescriptorSets(mDevice, &allocInfo, &mDescriptorSet) != VK_SUCCESS)
 		throw std::runtime_error("Failed to allocate descriptor set!");
 
-	VkDescriptorBufferInfo bufferInfo = {};
+	VkDescriptorBufferInfo bufferInfo{};
 	bufferInfo.buffer = mUniformBuffer;
 	bufferInfo.offset = 0;
 	bufferInfo.range = sizeof(UniformBufferObject);
 
-	std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+	std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptorWrites[0].dstSet = mDescriptorSet;
 	descriptorWrites[0].dstBinding = 0;
@@ -1079,24 +1078,28 @@ void Application::createCommandBuffers()
 		renderPassInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(mCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		{
+			vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
 
-		vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+			VkBuffer vertexBuffers[] = { mVertexBuffer };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(mCommandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-		VkBuffer vertexBuffers[] = { mVertexBuffer };
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(mCommandBuffers[i], 0, 1, vertexBuffers, offsets);
+			vkCmdBindIndexBuffer(mCommandBuffers[i], mIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		vkCmdBindIndexBuffer(mCommandBuffers[i], mIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindDescriptorSets(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSet, 0, nullptr);
 
-		vkCmdBindDescriptorSets(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSet, 0, nullptr);
-
-		vkCmdDrawIndexed(mCommandBuffers[i], mIndices.size(), 1, 0, 0, 1);
-
+			vkCmdDrawIndexed(mCommandBuffers[i], static_cast<uint32_t>(mIndices.size()), 1, 0, 0, 0);
+		}
 		vkCmdEndRenderPass(mCommandBuffers[i]);
 
 		if (vkEndCommandBuffer(mCommandBuffers[i]) != VK_SUCCESS)
 			throw std::runtime_error("Failed to record command buffer!");
 	}
+}
+
+void Application::InitImGui()
+{
 }
 
 void Application::createSemaphores()
@@ -1134,7 +1137,7 @@ void Application::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMe
 void Application::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
 	auto commandBuffer = beginSingleTimeCommands();
-	VkBufferCopy copyRegion = {};
+	VkBufferCopy copyRegion{};
 	copyRegion.size = size;
 	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
@@ -1160,12 +1163,12 @@ void Application::updateUniformBuffer()
 	UniformBufferObject ubo{};
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	ubo.model= model;
 	ubo.view = mCamera.GetViewMatrix();
 	ubo.proj = glm::perspective(glm::radians(45.0f), (static_cast<float>(mSwapChainExtent.width) / static_cast<float>(mSwapChainExtent.height)), 0.1f, 100.0f);	
 	ubo.proj[1][1] *= -1;
-	ubo.lightPos = glm::vec3(0.0f, 2.0f, 2.0f);
+
+	ubo.lightPos = glm::vec3(2.0f, -2.0f, 4.0f);
 	ubo.viewPos = mCamera.Position;
 
 	void* data;

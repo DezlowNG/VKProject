@@ -5,6 +5,11 @@
 
 #include <map>
 
+#include <ImGui/imgui.h>
+#include <ImGui/imgui_impl_glfw.h>
+#include <ImGui/imgui_impl_vulkan.h>
+
+#define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <Core/Vulkan/VkDeleter.h>
@@ -132,6 +137,10 @@ private:
 	VkDeleter<VkDescriptorSetLayout> mDescriptorSetLayout{ mDevice, vkDestroyDescriptorSetLayout };
 	VkDeleter<VkPipelineLayout> mPipelineLayout{ mDevice, vkDestroyPipelineLayout };
 	VkDeleter<VkPipeline> mGraphicsPipeline{ mDevice, vkDestroyPipeline };
+	
+	VkDeleter<VkSwapchainKHR> mSs{ mDevice, vkDestroySwapchainKHR };
+	VkDeleter<VkPipeline> mS{ mDevice, vkDestroyPipeline };
+
 	VkDeleter<VkCommandPool> mCommandPool{ mDevice, vkDestroyCommandPool };
 
 	VkDeleter<VkImage> mColorImage{ mDevice, vkDestroyImage };
@@ -182,7 +191,7 @@ private:
 	Camera mCamera;
 	bool mCameraInput = true;
 
-	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor"};
+	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor" };
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 	std::vector<Vertex> mVertices;
@@ -192,6 +201,7 @@ private:
 	const std::string MODEL_PATH = "Models/viking_room.obj";
 	const std::string TEXTURE_PATH = "Textures/viking_room.png";
 
+	ImGui_ImplVulkanH_Window mImGuiWindow;
 
 #ifdef NDEBUG
 	const bool mEnableValidationLayers = false;
@@ -280,6 +290,7 @@ private:
 	void createDescriptorSet();
 	void createCommandBuffers();
 	void createSemaphores();
+	void InitImGui();
 
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags props, VkDeleter<VkBuffer>& buffer, VkDeleter<VkDeviceMemory>& bufferMemory);
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
